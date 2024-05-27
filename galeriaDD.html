@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="galeriaDD.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Galeria</title>
+</head>
+<body>
+    <h1>Galeria Drag&amp;Drop + Scroll Lateral</h1>
+    
+    <div class="zonaArrastre">
+        <p class="frase">Añade cualquier imagen para guardar en tu galeria.</p>
+        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> <!-- Icono de carga -->
+        <i class="fas fa-check" aria-hidden="true"></i> <!-- Icono de tarea completada -->
+    </div>
+    
+    <div class="galeria">
+        <h2>Tu galería de imagenes</h2>
+        <button class="verTodo">Ver todas las imagenes</button>
+        <div class="arrow-left">&lt;</div>
+        <div class="galeriaScrolleable">
+            <!--Aqui entran las imagenes al arrastrarlas-->
+
+        </div>
+        <div class="arrow-right">&gt;</div>
+    </div>
+
+    <!--Ventana para abrir imagenes-->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-heart"></i>
+                <a id="download-link" download><i class="fas fa-download"></i></a>
+                <i class="fas fa-times close"></i>
+            </div>
+            <img id="modal-img">
+        </div>
+    </div>
+    
+
+    <div id="all-images-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="menu">
+                    <div class="tab active">Recientes</div>
+                    <div class="tab">Favoritos</div>
+                </div>
+                <i class="fas fa-times close"></i>
+            </div>
+            <div class="modal-body">
+                <!-- Área para las imágenes -->
+                <div class="image-area">
+                    <!-- Aquí se añadirán las imágenes dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="galeriaDD.js" type="text/javascript"></script>
+</body>
+</html>

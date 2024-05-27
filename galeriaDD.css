@@ -1,0 +1,344 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background: #eeeeee;
+}
+
+/* Estilos para el título */
+h1 {
+    display: block;
+    text-align: center;
+    margin: 20px auto;
+    border: 1px solid #48e;
+    width: 100%;
+    font-size: 58px;
+    padding: 20px;
+}
+
+/* Estilos para la zona de arrastre */
+.zonaArrastre {
+    position: relative;
+    inset: 0;
+    margin: auto;
+    border: 4px dashed #999;
+    height: 200px;
+    width: 60%;
+    display: grid;
+    place-items: center;
+    color: #999;
+    background-color: #fff;
+}
+
+/* Estilos para los iconos de carga */
+.fa-spinner,
+.fa-check {
+    position: absolute;
+    font-size: 60px;
+    display: none;
+    opacity: 0;
+}
+
+.fa-check {
+    color: green;
+}
+
+/* Animación de giro */
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Estilos para la galería */
+.galeria {
+    position: relative;
+    height: 500px;
+    margin: 50px;
+    margin-top: 35px;
+    padding: 0;
+    text-align: center;
+}
+
+/* Estilos para el título de la galería */
+h2 {
+    display: block;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 30px;
+}
+
+/* Estilos para el botón de ver todo */
+.verTodo {
+    display: inline;
+    padding: 10px;
+    background-color: rgb(143, 204, 138);
+    font-weight: 600;
+    border-radius: 12px;
+}
+
+.verTodo:hover {
+    background-color: green;
+    cursor: pointer;
+}
+
+/* Estilos para la galería interna */
+.galeriaScrolleable {
+    position: relative;
+    margin: 10px auto;
+    border: 5px groove #000000;
+    height: 400px;
+    width: 90%;
+    box-sizing: border-box;
+    background-color: #fff;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    white-space: nowrap; /* Evita que las imágenes se apilen verticalmente */
+    display: flex;
+    align-items: center;
+    scroll-behavior: smooth; /* Para un desplazamiento suave */
+}
+
+/* Estilos para las imágenes dentro de la galería */
+.imagen {
+    position: relative;
+    height: 100%; /* Asegura que las imágenes se ajusten a la altura del contenedor */
+    display: inline-block;
+    margin-right: 5px;
+    transition: all 0.3s ease;
+    cursor: grab;
+}
+
+.imagen img {
+    height: 100%;
+    object-fit: contain; /* Asegura que las imágenes mantengan su proporción y se ajusten dentro del contenedor */
+}
+
+.imagen:last-child {
+    margin-right: 0;
+}
+
+/* Estilos para los botones dentro de las imágenes */
+.button-heart,
+.button-close {
+    position: absolute;
+    top: 10px;
+    cursor: pointer;
+    display: none;
+    font-size: 32px;
+    color: #ffffff;
+    opacity: 0.3;
+}
+
+.button-heart {
+    right: 60px;
+}
+
+.button-heart:hover {
+    color: green;
+}
+
+.button-close:hover {
+    color: red;
+}
+
+.button-close {
+    right: 20px;
+}
+
+.imagen:hover .button-heart,
+.imagen:hover .button-close {
+    opacity: 1;
+}
+
+/* Estilos para las flechas de navegación */
+.arrow-left,
+.arrow-right {
+    position: absolute;
+    top: 60%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    color: #333;
+    font-size: 56px;
+    line-height: 40px;
+    text-align: center;
+    cursor: pointer;
+    z-index: 1;
+    transition: all 0.2s linear;
+    user-select: none;
+}
+
+.arrow-left {
+    left: 0;
+}
+
+.arrow-right {
+    right: 0;
+}
+
+.arrow-left:active,
+.arrow-right:active {
+    color: gray;
+    font-size: 44px;
+}
+
+/* Estilos para la ventana modal */
+.modal {
+    display: none; /* Oculta la ventana modal por defecto */
+    position: fixed;
+    z-index: 1; /* Sitúa la ventana por encima del contenido principal */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9); /* Fondo oscuro */
+    justify-content: center; /* Centrado horizontal */
+    align-items: center; /* Centrado vertical */
+}
+
+
+.modal-content {
+    display: none; /* Oculta el contenido del modal por defecto */
+    position: relative;
+    background-color: #fefefe;
+    padding: 0;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 700px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.modal-content.show {
+    display: block;
+}
+
+.modal-header {
+    display: flex;
+    background-color: #333;
+    padding: 10px;
+    border-bottom: 1px solid #888;
+}
+
+.modal-header i {
+    color: #fff;
+    font-size: 20px;
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.modal-header i:hover, .modal-header a:hover {
+    color: #bbb;
+}
+
+.modal-header .fa-heart:hover {
+    color: #4e8;
+}
+.modal-header .fa-download:hover {
+    color: #48e;
+}
+.modal-header .close:hover {
+    color: #e48;
+}
+
+#modal-img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Estilos para el botón de retroceso */
+.back-button {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 0; /* Eliminamos el relleno */
+    width: 30px; /* Definimos un ancho */
+    height: 30px; /* Definimos una altura */
+    border-radius: 50%; /* Hacemos que tenga forma de círculo */
+    cursor: pointer;
+    z-index: 10;
+    display: flex; /* Usamos flexbox para centrar el ícono */
+    justify-content: center; /* Centramos horizontalmente */
+    align-items: center; /* Centramos verticalmente */
+}
+
+.back-button i {
+    font-size: 16px; /* Ajustamos el tamaño del ícono */
+}
+
+.back-button:hover{
+    color: #bbb;
+}
+
+
+/* Agrega este código a tu hoja de estilo CSS */
+
+/* Estilos para el cuerpo del modal */
+#all-images-modal {
+    background-color: rgba(0, 0, 0, 0.9); /* Fondo oscuro */
+}
+
+.modal-content {
+    width: 80%;
+    height: 80%;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+}
+
+.menu {
+    display: flex;
+    gap: 10px;
+}
+
+.tab {
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.tab.active {
+    background-color: #555;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.image-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* 5 columnas como máximo */
+    grid-auto-rows: 100px; /* Altura de cada fila */
+    gap: 10px;
+    padding: 10px;
+}
+
+/* Estilos para las imágenes */
+.image-area img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+}
+
+
