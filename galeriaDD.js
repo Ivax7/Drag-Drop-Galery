@@ -281,8 +281,9 @@ function closeAllImagesModal() {
 
 
 // Función para cargar las imágenes recientes
+// Función para cargar las imágenes recientes
 async function cargarImagenesRecientes() {
-    const imageArea = document.querySelector('.image-area');
+    const imageArea = document.querySelector('#all-images-modal .image-area');
     imageArea.innerHTML = ''; // Limpiamos el área de imágenes
 
     try {
@@ -293,11 +294,14 @@ async function cargarImagenesRecientes() {
         }
         const imageUrls = await response.json();
 
-        // Insertamos las imágenes al principio del contenedor
-        imageUrls.reverse().forEach(imageUrl => {
+        // Invierte el orden de las imágenes más recientes
+        imageUrls.reverse();
+
+        // Insertamos las imágenes al final del contenedor
+        imageUrls.forEach(imageUrl => {
             const img = document.createElement('img');
             img.src = imageUrl;
-            imageArea.insertBefore(img, imageArea.firstChild);
+            imageArea.appendChild(img);
             
             // Añadimos evento de clic a cada imagen para abrir el modal
             img.addEventListener('click', () => {
@@ -308,6 +312,9 @@ async function cargarImagenesRecientes() {
         console.error('Error de red:', error);
     }
 }
+
+
+
 
 // Función para cambiar entre las pestañas "Recientes" y "Favoritos"
 document.querySelectorAll('.tab').forEach(tab => {

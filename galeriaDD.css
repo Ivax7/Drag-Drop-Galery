@@ -202,7 +202,6 @@ h2 {
     align-items: center; /* Centrado vertical */
 }
 
-
 .modal-content {
     display: none; /* Oculta el contenido del modal por defecto */
     position: relative;
@@ -216,43 +215,57 @@ h2 {
     overflow: hidden;
 }
 
-.modal-content.show {
-    display: block;
+/* Estilos para la imagen dentro del modal */
+#modal-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    height: auto;
+    display: flex;
+    margin: 0 auto;
+    align-items: center;
 }
 
-.modal-header {
+/* Estilos para la imagen dentro del modal
+#modal-img {
+    position: absolute;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    height: auto;
     display: flex;
+    margin: auto;
+    inset: 0;
+    align-items: center;
+} */
+
+#modal .modal-header {
+    display: flex;
+    justify-content: flex-end;
     background-color: #333;
     padding: 10px;
     border-bottom: 1px solid #888;
 }
 
-.modal-header i {
+#modal .modal-header i {
     color: #fff;
     font-size: 20px;
     margin-left: 15px;
     cursor: pointer;
 }
 
-.modal-header i:hover, .modal-header a:hover {
+#modal .modal-header i:hover, .modal-header a:hover {
     color: #bbb;
 }
 
-.modal-header .fa-heart:hover {
+#modal .modal-header .fa-heart:hover {
     color: #4e8;
 }
-.modal-header .fa-download:hover {
+#modal .modal-header .fa-download:hover {
     color: #48e;
 }
-.modal-header .close:hover {
+#modal .modal-header .close:hover {
     color: #e48;
-}
-
-#modal-img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    margin: 0 auto;
 }
 
 /* Estilos para el botón de retroceso */
@@ -295,6 +308,7 @@ h2 {
     height: 80%;
     width: 80%;
     margin: auto;
+    background-color: #aaa;
 }
 
 .modal-header {
@@ -310,8 +324,12 @@ h2 {
 .closeAll {
     position: absolute; /* Posiciona la cruz de forma absoluta */
     top: 5px; /* Ajusta la posición vertical */
-    left: -8px; /* Ajusta la posición horizontal */
+    left: 8px; /* Ajusta la posición horizontal */
     cursor: pointer;
+}
+
+.closeAll:hover{
+    color: #e48;
 }
 
 .menu {
@@ -344,9 +362,17 @@ h2 {
     width: 80%; /* Ajusta el ancho del área de imágenes */
 }
 
-.image-area img {
-    max-width: calc(25% - 10px); /* Ajusta el tamaño de las imágenes para que quepan 4 por fila */
-    height: auto;
-    object-fit: cover;
-    margin: 5px;
+.image-area {
+    width: 100%; /* Ocupa todo el ancho disponible */
+    display: flex;
+    flex-wrap: wrap;
 }
+
+.image-area img {
+    width: calc(25% - 10px); /* Ancho para que quepan 4 imágenes por fila */
+    height: 100px;
+    margin: 5px;
+    box-sizing: border-box; /* Incluye el borde en el tamaño total */
+    object-fit: contain; /* Ajusta la imagen para que cubra el contenedor */
+}
+
