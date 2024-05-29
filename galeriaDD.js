@@ -1,3 +1,4 @@
+
 // Guardamos elementos en las variables
 const zona = document.querySelector(".zonaArrastre");
 const arrowLeft = document.querySelector('.arrow-left');
@@ -11,6 +12,7 @@ const modalContent = document.querySelector('.modal-content');
 const modalImg = document.getElementById('modal-img');
 const closeModalBtn = document.querySelector('.close');
 const downloadLink = document.getElementById('download-link');
+
 
 // Añadimos evento al pasar por encima de la zona con algo arrastrado
 zona.addEventListener("dragover", (e) => {
@@ -32,7 +34,7 @@ async function cargarImagenes() {
             return;
         }
         const imageUrls = await response.json();
-
+        
         for (const imageUrl of imageUrls) {
             crearImagen(imageUrl);
         }
@@ -70,7 +72,96 @@ function crearImagen(imageUrl) {
     imagen.addEventListener('click', () => {
         abrirModal(imageUrl);
     });
+
+    // Verifica y restaura el estado de favorito al cargar la página
+    if (imagenesFavoritas.includes(imageUrl)) {
+        buttonHeart.classList.add('favorito');
+        buttonHeart.style.color = 'green'; // Cambia el color a verde
+    }
+
+    // Evento de clic para agregar o quitar una imagen de favoritos
+    buttonHeart.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Evitar que el clic se propague al hacer clic en el corazón
+
+        if (buttonHeart.classList.contains('favorito')) {
+            // Si la imagen ya está en favoritos, la quitamos
+            const index = imagenesFavoritas.indexOf(imageUrl);
+            if (index > -1) {
+                imagenesFavoritas.splice(index, 1);
+            }
+            buttonHeart.classList.remove('favorito');
+            buttonHeart.style.color = ''; // Restaura el color original
+        } else {
+            // Si no está en favoritos, la agregamos
+            imagenesFavoritas.push(imageUrl);
+            buttonHeart.classList.add('favorito');
+            buttonHeart.style.color = 'green'; // Cambia el color a verde
+        }
+
+        // Guarda la lista de imágenes favoritas en el almacenamiento local
+        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
+
+        // Envía la lista de imágenes favoritas actualizada al servidor
+        try {
+            const response = await fetch('/favorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
+            });
+            if (!response.ok) {
+                console.error('Error al enviar la lista de imágenes favoritas al servidor');
+            }
+        } catch (error) {
+            console.error('Error de red al enviar la lista de imágenes favoritas al servidor:', error);
+        }
+    });
+
+    // Evento de clic para eliminar la imagen
+    buttonClose.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Evitar que el clic se propague al hacer clic en el botón de cerrar
+
+        try {
+            // Realizar la solicitud DELETE para eliminar la imagen del servidor
+            const response = await fetch(imageUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ imageUrl: imageUrl })
+            });
+
+            if (response.ok) {
+                // Eliminar la imagen del DOM
+                imagenContainer.remove();
+
+                // Si la imagen estaba marcada como favorita, también eliminarla de la lista de favoritos
+                if (imagenesFavoritas.includes(imageUrl)) {
+                    imagenesFavoritas = imagenesFavoritas.filter(url => url !== imageUrl);
+                    localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas)); // Actualizar almacenamiento local
+
+                    // Actualizar la lista de imágenes favoritas en el cliente
+                    const favoriteImages = document.querySelectorAll('.image-area img');
+                    favoriteImages.forEach(image => {
+                        if (image.src === imageUrl) {
+                            image.remove();
+                        }
+                    });
+                }
+
+                console.log('Imagen eliminada:', imageUrl);
+            } else {
+                console.error('Error al eliminar la imagen');
+            }
+        } catch (error) {
+            console.error('Error al eliminar la imagen:', error);
+        }
+    });
 }
+
+
+
 
 // Función para abrir el modal de imagen completa
 function abrirModal(imageUrl, desdeMenu = false) {
@@ -78,27 +169,39 @@ function abrirModal(imageUrl, desdeMenu = false) {
     const allImagesModal = document.getElementById('all-images-modal');
     allImagesModal.style.display = "none"; // Ocultar el menú de "Ver todas las imágenes"
 
-    modal.style.display = "flex"; // Mostrar el modal de imagen completa
-    modalContent.style.display = "block";
-    modalImg.src = imageUrl;
-    downloadLink.href = imageUrl; // Asigna la URL de la imagen al enlace de descarga
+    // Verificar si la imagen existe antes de asignarla al modal
+    fetch(imageUrl)
+        .then(response => {
+            if (response.ok) {
+                modal.style.display = "flex"; // Mostrar el modal de imagen completa
+                modalContent.style.display = "block";
+                modalImg.src = imageUrl;
+                downloadLink.href = imageUrl; // Asigna la URL de la imagen al enlace de descarga
 
-    // Si se abrió desde el menú de imágenes, agregar un botón para retroceder
-    if (desdeMenu) {
-        const backButton = document.createElement('button');
-        backButton.className = 'back-button';
-        backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
-        modalContent.appendChild(backButton);
+                // Si se abrió desde el menú de imágenes, agregar un botón para retroceder
+                if (desdeMenu) {
+                    const backButton = document.createElement('button');
+                    backButton.className = 'back-button';
+                    backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+                    modalContent.appendChild(backButton);
 
-        // Agregar evento de clic al botón de retroceso
-        backButton.addEventListener('click', () => {
-            // Oculta el modal de imagen completa y muestra el menú de "Ver todas las imágenes"
-            modal.style.display = "none";
-            modalContent.style.display = "none";
-            allImagesModal.style.display = "flex";
+                    // Agregar evento de clic al botón de retroceso
+                    backButton.addEventListener('click', () => {
+                        // Oculta el modal de imagen completa y muestra el menú de "Ver todas las imágenes"
+                        modal.style.display = "none";
+                        modalContent.style.display = "none";
+                        allImagesModal.style.display = "flex";
+                    });
+                }
+            } else {
+                console.error('La imagen no existe:', imageUrl);
+            }
+        })
+        .catch(error => {
+            console.error('Error al verificar la existencia de la imagen:', error);
         });
-    }
 }
+
 
 // Añadimos evento al dejar en la zona algo arrastrado
 zona.addEventListener("drop", async (e) => {
@@ -205,7 +308,7 @@ function animateScroll(element, start, end, duration) {
     window.requestAnimationFrame(step);
 }
 
-// Añadimos eventos para borrar y (fav)
+// Añadimos eventos para borrar
 document.addEventListener('click', async (e) => {
     if (e.target.classList.contains('button-close')) {
         const imagenContainer = e.target.closest('.imagen');
@@ -243,12 +346,9 @@ window.addEventListener('click', (e) => {
     }
 });
 
-
-// Dentro de la sección de JavaScript de tu documento HTML
-
 // Función para abrir el modal de "Ver todas las imágenes"
 function openAllImagesModal() {
-    const allImagesModal = document.getElementById('all-images-modal'); // Corregido para seleccionar el modal por ID
+    const allImagesModal = document.getElementById('all-images-modal');
     allImagesModal.style.display = "flex";
 
     // Llamamos a la función para cargar las imágenes recientes
@@ -265,7 +365,6 @@ function openAllImagesModal() {
 }
 
 // Cierra el modal si el usuario hace clic fuera del contenido
-
 window.addEventListener('click', (e) => {
     if (e.target == modal) {
         modal.style.display = "none";
@@ -279,8 +378,6 @@ function closeAllImagesModal() {
     allImagesModal.style.display = "none";
 }
 
-
-// Función para cargar las imágenes recientes
 // Función para cargar las imágenes recientes
 async function cargarImagenesRecientes() {
     const imageArea = document.querySelector('#all-images-modal .image-area');
@@ -294,24 +391,73 @@ async function cargarImagenesRecientes() {
         }
         const imageUrls = await response.json();
 
-        // Invierte el orden de las imágenes más recientes
-        imageUrls.reverse();
+        // Filtra las imágenes que existen en el servidor
+        const existingImages = await Promise.all(imageUrls.map(async imageUrl => {
+            try {
+                const response = await fetch(imageUrl);
+                if (response.ok) {
+                    return imageUrl;
+                }
+            } catch (error) {
+                console.error('Error al verificar la existencia de la imagen:', error);
+            }
+        }));
 
-        // Insertamos las imágenes al final del contenedor
-        imageUrls.forEach(imageUrl => {
+        // Insertamos las imágenes existentes al principio del contenedor
+        existingImages.forEach(imageUrl => {
             const img = document.createElement('img');
             img.src = imageUrl;
-            imageArea.appendChild(img);
-            
+            imageArea.insertBefore(img, imageArea.firstChild);
+
             // Añadimos evento de clic a cada imagen para abrir el modal
             img.addEventListener('click', () => {
-                abrirModal(imageUrl, true);
+                abrirModal(imageUrl);
             });
         });
     } catch (error) {
         console.error('Error de red:', error);
     }
 }
+
+
+let imagenesFavoritas = []; // Lista para almacenar las imágenes favoritas
+
+// Función para cargar las imágenes favoritas
+async function cargarImagenesFavoritas() {
+    const imageArea = document.querySelector('#all-images-modal .image-area');
+    imageArea.innerHTML = ''; // Limpiamos el área de imágenes
+
+    try {
+        // Realizar una solicitud al servidor para obtener las imágenes favoritas actuales
+        const response = await fetch('/favorite');
+        if (response.ok) {
+            const favoriteImageUrls = await response.json();
+            // Crear elementos de imagen y agregarlos al contenedor solo si existen en el servidor
+            favoriteImageUrls.reverse();
+            for (const imageUrl of favoriteImageUrls) {
+                try {
+                    const response = await fetch(imageUrl);
+                    if (response.ok) {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        img.addEventListener('click', () => {
+                            abrirModal(imageUrl, true);
+                        });
+                        imageArea.appendChild(img);
+                    }
+                } catch (error) {
+                    console.error('Error al cargar la imagen favorita:', error);
+                }
+            }
+        } else {
+            console.error('Error al obtener las imágenes favoritas');
+        }
+    } catch (error) {
+        console.error('Error al cargar las imágenes favoritas:', error);
+    }
+}
+
+
 
 
 
@@ -328,7 +474,7 @@ document.querySelectorAll('.tab').forEach(tab => {
             cargarImagenesRecientes();
         } else {
             // Si es la pestaña de "Favoritos", implementar lógica para cargar imágenes favoritas (pendiente)
-
+            cargarImagenesFavoritas();
             // Aquí puedes implementar la lógica para cargar imágenes favoritas, si tienes una función específica para ello.
         }
     });
@@ -337,3 +483,86 @@ document.querySelectorAll('.tab').forEach(tab => {
 // Eventos para abrir y cerrar el modal
 document.querySelector('.verTodo').addEventListener('click', openAllImagesModal);
 document.querySelector('#all-images-modal .close').addEventListener('click', closeAllImagesModal);
+
+
+
+
+// Al cargar la página, verifica si hay imágenes favoritas almacenadas en el servidor
+window.addEventListener('load', async () => {
+    try {
+        const response = await fetch('/favorite');
+        if (response.ok) {
+            const favoriteImageUrls = await response.json();
+            imagenesFavoritas = favoriteImageUrls;
+            // Marca como favoritas las imágenes almacenadas
+            marcarFavoritas();
+        } else {
+            console.error('Error al obtener las imágenes favoritas');
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
+    }
+});
+
+// Evento para agregar o quitar una imagen de favoritos
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('button-heart')) {
+        const imagenContainer = e.target.closest('.imagen');
+        const imagen = imagenContainer.querySelector('img');
+        const imageUrl = imagen.src;
+
+        // Si la imagen ya está en favoritos, la quitamos
+        if (imagenesFavoritas.includes(imageUrl)) {
+            console.log('Quitar imagen de favoritos:', imageUrl);
+            const index = imagenesFavoritas.indexOf(imageUrl);
+            if (index > -1) {
+                imagenesFavoritas.splice(index, 1);
+            }
+            e.target.classList.remove('favorito');
+        } else { // Si no está en favoritos, la agregamos
+            console.log('Agregar imagen a favoritos:', imageUrl);
+            imagenesFavoritas.push(imageUrl);
+            e.target.classList.add('favorito');
+        }
+
+        // Guarda la lista de imágenes favoritas en el almacenamiento local
+        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
+
+        // Envía la lista de imágenes favoritas actualizada al servidor
+        try {
+            const response = await fetch('/favorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
+            });
+            if (!response.ok) {
+                console.error('Error al enviar la lista de imágenes favoritas al servidor');
+            }
+        } catch (error) {
+            console.error('Error de red al enviar la lista de imágenes favoritas al servidor:', error);
+        }
+
+        // Actualiza la lista de imágenes favoritas en la interfaz de usuario
+        cargarImagenesFavoritas();
+    }
+});
+
+
+
+
+
+// Función para marcar las imágenes favoritas
+function marcarFavoritas() {
+    const botonesCorazon = document.querySelectorAll('.button-heart');
+    botonesCorazon.forEach((buttonHeart) => {
+        const imagenContainer = buttonHeart.closest('.imagen');
+        const imagen = imagenContainer.querySelector('img');
+        const imageUrl = imagen.src;
+
+        if (imagenesFavoritas.includes(imageUrl)) {
+            buttonHeart.classList.add('favorito');
+        }
+    });
+}

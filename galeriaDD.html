@@ -11,14 +11,14 @@
     <h1>Galeria Drag&amp;Drop + Scroll Lateral</h1>
     
     <div class="zonaArrastre">
-        <p class="frase">Añade cualquier imagen para guardar en tu galeria.</p>
+        <p class="frase">Arrastra una imagen o haz click para añadir una imagen</p>
         <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> <!-- Icono de carga -->
         <i class="fas fa-check" aria-hidden="true"></i> <!-- Icono de tarea completada -->
     </div>
     
     <div class="galeria">
         <h2>Tu galería de imagenes</h2>
-        <button class="verTodo">Ver todas las imagenes</button>
+        <button class="verTodo" data-desde-menu="true">Ver todas las imagenes</button>
         <div class="arrow-left">&lt;</div>
         <div class="galeriaScrolleable">
             <!--Aqui entran las imagenes al arrastrarlas-->
@@ -31,7 +31,7 @@
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <i class="fas fa-heart"></i>
+                <i class="fas fa-heart heart-icon" id="modal-heart"></i>
                 <a id="download-link" download><i class="fas fa-download"></i></a>
                 <i class="fas fa-times close"></i>
             </div>
@@ -40,7 +40,7 @@
     </div>
     
 
-    <!--Ventana para abrir TODAS las imagenes-->
+    <!-- Ventana para abrir TODAS las imagenes -->
     <div id="all-images-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -54,6 +54,11 @@
                 <!-- Área para las imágenes -->
                 <div class="image-area">
                     <!-- Aquí se añadirán las imágenes dinámicamente -->
+                </div>
+            
+                <!-- Agregar el contenedor para las imágenes favoritas -->
+                <div class="favorite-area">
+                    <!-- Aquí se añadirán las imágenes favoritas dinámicamente -->
                 </div>
             </div>
         </div>

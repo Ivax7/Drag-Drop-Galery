@@ -34,6 +34,9 @@ h1 {
     color: #999;
     background-color: #fff;
 }
+.zonaArrastre p {
+    font-style: italic;
+}
 
 /* Estilos para los iconos de carga */
 .fa-spinner,
@@ -209,6 +212,7 @@ h2 {
     padding: 0;
     border: 1px solid #888;
     width: 80%;
+    max-height: 90%;
     max-width: 700px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     border-radius: 10px;
@@ -218,26 +222,12 @@ h2 {
 /* Estilos para la imagen dentro del modal */
 #modal-img {
     max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    max-height: 90vh;
     height: auto;
     display: flex;
     margin: 0 auto;
     align-items: center;
 }
-
-/* Estilos para la imagen dentro del modal
-#modal-img {
-    position: absolute;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    height: auto;
-    display: flex;
-    margin: auto;
-    inset: 0;
-    align-items: center;
-} */
 
 #modal .modal-header {
     display: flex;
@@ -268,34 +258,6 @@ h2 {
     color: #e48;
 }
 
-/* Estilos para el botón de retroceso */
-.back-button {
-    position: absolute;
-    top: 5px;
-    left: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    padding: 0; /* Eliminamos el relleno */
-    width: 30px; /* Definimos un ancho */
-    height: 30px; /* Definimos una altura */
-    border-radius: 50%; /* Hacemos que tenga forma de círculo */
-    cursor: pointer;
-    z-index: 10;
-    display: flex; /* Usamos flexbox para centrar el ícono */
-    justify-content: center; /* Centramos horizontalmente */
-    align-items: center; /* Centramos verticalmente */
-}
-
-.back-button i {
-    font-size: 16px; /* Ajustamos el tamaño del ícono */
-}
-
-.back-button:hover{
-    color: #bbb;
-}
-
-
 /* Agrega este código a tu hoja de estilo CSS */
 
 /* Estilos para el modal de "Ver todas las imágenes" */
@@ -303,7 +265,7 @@ h2 {
     background-color: rgba(0, 0, 0, 0.9); /* Fondo oscuro */
 }
 
-.modal-content {
+#all-images-modal .modal-content {
     display: flex;
     height: 80%;
     width: 80%;
@@ -374,5 +336,34 @@ h2 {
     margin: 5px;
     box-sizing: border-box; /* Incluye el borde en el tamaño total */
     object-fit: contain; /* Ajusta la imagen para que cubra el contenedor */
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+/* Estilos para el botón de retroceso */
+.back-button {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 0; /* Eliminamos el relleno */
+    width: 30px; /* Definimos un ancho */
+    height: 30px; /* Definimos una altura */
+    border-radius: 50%; /* Hacemos que tenga forma de círculo */
+    cursor: pointer;
+    z-index: 10;
+    display: flex; /* Usamos flexbox para centrar el ícono */
+    justify-content: center; /* Centramos horizontalmente */
+    align-items: center; /* Centramos verticalmente */
+}
+
+.back-button i {
+    font-size: 16px; /* Ajustamos el tamaño del ícono */
+}
+
+.back-button:hover{
+    color: #bbb;
 }
 

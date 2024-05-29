@@ -6,6 +6,8 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 1234;
 
+let imagenesFavoritas = []; // Lista para almacenar las imágenes favoritas
+
 // Ruta estática para servir imágenes cargadas y otros archivos estáticos
 app.use(express.static(path.join(__dirname, '')));
 
@@ -62,6 +64,27 @@ app.get('/images', (req, res) => {
   });
 });
 
+// Ruta para obtener la lista de imagenes favoritas
+app.get('/favorite', (req, res) => {
+  res.json(imagenesFavoritas);
+});
+
+// Middleware para parsear el cuerpo de las solicitudes entrantes como JSON
+app.use(express.json());
+
+// Modifica la ruta para agregar o quitar una imagen de favoritos
+// Ruta para agregar o quitar imágenes de favoritos
+app.post('/favorite', (req, res) => {
+  const favoriteImageUrls = req.body.favoriteImageUrls;
+
+  // Actualiza la lista de imágenes favoritas en el servidor
+  imagenesFavoritas = favoriteImageUrls;
+
+  // Envía una respuesta exitosa
+  res.sendStatus(200);
+});
+
+
 // Ruta para eliminar imágenes
 app.delete('/upload/:filename', (req, res) => {
   const filename = req.params.filename;
@@ -85,7 +108,6 @@ app.delete('/upload/:filename', (req, res) => {
     });
   });
 });
-
 
 // Manejador de errores para Multer
 app.use((err, req, res, next) => {
