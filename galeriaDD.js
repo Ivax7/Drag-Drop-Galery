@@ -336,7 +336,16 @@ document.addEventListener('click', async (e) => {
 closeModalBtn.addEventListener('click', () => {
     modal.style.display = "none";
     modalContent.style.display = "none";
+
+    // Establecer la pestaña activa como "Recientes"
+    console.log("Cerrando modal");
+
+    document.querySelector('.favoritas').classList.remove('active');
+    document.querySelector('.recientes').classList.add('active');
 });
+
+
+
 
 // Cierra el modal si el usuario hace clic fuera del contenido
 window.addEventListener('click', (e) => {

@@ -98,7 +98,7 @@ h2 {
     height: 400px;
     width: 90%;
     box-sizing: border-box;
-    background-color: #fff;
+    background-color: #c4c4c4;
     overflow-x: hidden;
     overflow-y: hidden;
     white-space: nowrap; /* Evita que las imágenes se apilen verticalmente */

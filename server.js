@@ -27,7 +27,18 @@ const storage = multer.diskStorage({
 });
 
 // Inicializa multer con la configuración de almacenamiento
-const upload = multer({ storage: storage });
+const upload = multer({ 
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    // Verifica si el archivo es una imagen o un GIF
+    const extension = path.extname(file.originalname).toLowerCase();
+    if (['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(extension)) {
+      cb(null, true); // Acepta el archivo
+    } else {
+      cb(new Error('Solo se permiten archivos de imagen o GIF')); // Rechaza el archivo
+    }
+  }
+});
 
 // Ruta para cargar imágenes
 app.post('/upload', upload.single('image'), (req, res) => {
@@ -55,7 +66,7 @@ app.get('/images', (req, res) => {
     // Filtra solo los archivos de imagen
     const imageFiles = files.filter(file => {
       const extension = path.extname(file).toLowerCase();
-      return ['.png', '.jpg', '.jpeg', '.gif'].includes(extension);
+      return ['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(extension);
     });
     // Construye la URL completa para cada imagen
     const imageUrls = imageFiles.map(file => `http://localhost:${PORT}/upload/${file}`);
