@@ -183,7 +183,7 @@ function abrirModal(imageUrl, desdeMenu = false) {
                     const backButton = document.createElement('button');
                     backButton.className = 'back-button';
                     backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
-                    modalContent.appendChild(backButton);
+                    modal.appendChild(backButton); // Agrega el botón al modal
 
                     // Agregar evento de clic al botón de retroceso
                     backButton.addEventListener('click', () => {
@@ -332,16 +332,25 @@ document.addEventListener('click', async (e) => {
     }
 });
 
-// Evento para cerrar el modal
-closeModalBtn.addEventListener('click', () => {
+// Función para cerrar el modal
+function cerrarModal() {
     modal.style.display = "none";
     modalContent.style.display = "none";
 
-    // Establecer la pestaña activa como "Recientes"
-    console.log("Cerrando modal");
-
-    document.querySelector('.favoritas').classList.remove('active');
+    // Remover la clase 'active' de cualquier otro contenedor que la tenga
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    // Añadir la clase 'active' al contenedor 'recientes'
     document.querySelector('.recientes').classList.add('active');
+}
+
+// Evento para cerrar el modal al hacer clic en el botón de cerrar
+closeModalBtn.addEventListener('click', cerrarModal);
+
+// Evento para cerrar el modal si el usuario hace clic fuera del contenido
+window.addEventListener('click', (e) => {
+    if (e.target == modal) {
+        cerrarModal();
+    }
 });
 
 
@@ -373,19 +382,33 @@ function openAllImagesModal() {
 
 }
 
-// Cierra el modal si el usuario hace clic fuera del contenido
-window.addEventListener('click', (e) => {
-    if (e.target == modal) {
-        modal.style.display = "none";
-        modalContent.style.display = "none";
-    }
-});
-
 // Función para cerrar el modal de "Ver todas las imágenes"
 function closeAllImagesModal() {
     const allImagesModal = document.getElementById('all-images-modal');
     allImagesModal.style.display = "none";
+    
+    // Remover la clase 'active' de cualquier otro contenedor que la tenga
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    // Añadir la clase 'active' al contenedor 'recientes'
+    document.querySelector('.recientes').classList.add('active');
 }
+
+// Evento para (llamar a la función de) cerrar el modal al hacer clic en el botón de cerrar
+document.querySelector('#all-images-modal .close').addEventListener('click', closeAllImagesModal);
+
+// Evento para (llamar a la función de) cerrar el modal si el usuario hace clic fuera del contenido
+window.addEventListener('click', (e) => {
+    const allImagesModal = document.getElementById('all-images-modal');
+    if (e.target == allImagesModal) {
+        closeAllImagesModal(); // se hace una llamada a la función para que reinicie las clases
+                                // si se hace clic fuera del modal
+    }
+});
+
+// Eventos para abrir y cerrar el modal
+document.querySelector('.verTodo').addEventListener('click', openAllImagesModal);
+
+
 
 // Función para cargar las imágenes recientes
 async function cargarImagenesRecientes() {
@@ -467,10 +490,6 @@ async function cargarImagenesFavoritas() {
 }
 
 
-
-
-
-
 // Función para cambiar entre las pestañas "Recientes" y "Favoritos"
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -488,13 +507,6 @@ document.querySelectorAll('.tab').forEach(tab => {
         }
     });
 });
-
-// Eventos para abrir y cerrar el modal
-document.querySelector('.verTodo').addEventListener('click', openAllImagesModal);
-document.querySelector('#all-images-modal .close').addEventListener('click', closeAllImagesModal);
-
-
-
 
 // Al cargar la página, verifica si hay imágenes favoritas almacenadas en el servidor
 window.addEventListener('load', async () => {
