@@ -3,28 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fuente de letra -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&display=swap" rel="stylesheet">
+    
+    
     <link rel="stylesheet" href="galeriaDD.css" type="text/css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    
     <title>Galeria</title>
 </head>
 <body>
     <h1>Galeria Drag&amp;Drop + Scroll Lateral</h1>
     
+    <div class="container">
+        <div class="loader"></div>
+    </div>
+
+
     <div class="zonaArrastre">
-        <p class="frase">Arrastra una imagen o haz click para añadir una imagen</p>
+        <p class="frase">Arrastra o haz click para añadir una imagen</p>
         <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> <!-- Icono de carga -->
         <i class="fas fa-check" aria-hidden="true"></i> <!-- Icono de tarea completada -->
+        <input type="file" id="fileInput" multiple style="display: none;">
     </div>
     
     <div class="galeria">
-        <h2>Tu galería de imagenes</h2>
-        <button class="verTodo" data-desde-menu="true">Ver todas las imagenes</button>
-        <div class="arrow-left">&lt;</div>
+        <h2>Galería de imagenes</h2>
+        <button class="verTodo" data-desde-menu="true"><span class="button_top"> Ver todas las imagenes
+        </span></button>
+        <button class="arrow-left arrow">←</button>
+
         <div class="galeriaScrolleable">
             <!--Aqui entran las imagenes al arrastrarlas-->
 
         </div>
-        <div class="arrow-right">&gt;</div>
+
+        <button class="arrow-right arrow">→</button>
     </div>
 
     <!--Ventana para abrir imagenes-->

@@ -7,19 +7,71 @@
 }
 
 body {
-    background: #eeeeee;
+    width: 100%;
+    height: 100%;
+    --s: 200px; /* control the size */
+    --c1: #1d1d1d;
+    --c2: #4e4f51;
+    --c3: #3c3c3c;
+
+    background: repeating-conic-gradient(
+        from 30deg,
+        #0000 0 120deg,
+        var(--c3) 0 180deg
+        )
+        calc(0.5 * var(--s)) calc(0.5 * var(--s) * 0.577),
+    repeating-conic-gradient(
+        from 30deg,
+        var(--c1) 0 60deg,
+        var(--c2) 0 120deg,
+        var(--c3) 0 180deg
+    );
+    background-size: var(--s) calc(var(--s) * 0.577);
 }
 
 /* Estilos para el título */
 h1 {
+    font-family: "Oswald", sans-serif;
     display: block;
     text-align: center;
-    margin: 20px auto;
-    border: 1px solid #48e;
+    margin: 10px auto 20px;
     width: 100%;
     font-size: 58px;
-    padding: 20px;
+    padding: 15px;
+    color: beige;
 }
+
+/* Loader (decorativo) */
+.loader {
+    width: 100%;
+    height: 5px;
+    border-radius: 2px;
+    position: absolute;
+    top: 130px;
+}
+
+.loader::before {
+    content: "";
+    position: absolute;
+    background-color: rgb(9, 161, 188);
+    width: 0%;
+    height: 100%;
+    border-radius: 2px;
+    animation: load 2s ease-in-out forwards;
+    box-shadow: rgb(9, 161, 188) 0px 2px 29px 0px;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+}
+
+@keyframes load {
+    100% {
+    width: 100%;
+    }
+}
+
 
 /* Estilos para la zona de arrastre */
 .zonaArrastre {
@@ -32,7 +84,8 @@ h1 {
     display: grid;
     place-items: center;
     color: #999;
-    background-color: #fff;
+    background-color: rgb(253, 253, 237);
+    cursor: pointer;
 }
 .zonaArrastre p {
     font-style: italic;
@@ -63,7 +116,7 @@ h1 {
     position: relative;
     height: 500px;
     margin: 50px;
-    margin-top: 35px;
+    margin-top: 20px;
     padding: 0;
     text-align: center;
 }
@@ -74,21 +127,48 @@ h2 {
     text-align: center;
     margin-bottom: 15px;
     font-size: 30px;
+    font-family: "Oswald", sans-serif;
+    color: beige;
+
 }
 
 /* Estilos para el botón de ver todo */
 .verTodo {
-    display: inline;
-    padding: 10px;
-    background-color: rgb(143, 204, 138);
-    font-weight: 600;
-    border-radius: 12px;
-}
-
-.verTodo:hover {
-    background-color: green;
+    /* Variables */
+    --button_radius: 0.75em;
+    --button_color: beige;
+    --button_outline_color: #000000;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: var(--button_radius);
+    background: var(--button_outline_color);
     cursor: pointer;
 }
+
+.button_top {
+    font-family: "Oswald", sans-serif;
+    display: block;
+    box-sizing: border-box;
+    border: 2px solid var(--button_outline_color);
+    border-radius: var(--button_radius);
+    padding: 0.75em 1.5em;
+    background: var(--button_color);
+    color: var(--button_outline_color);
+    transform: translateY(-0.2em);
+    transition: transform 0.1s ease;
+}
+
+.verTodo:hover .button_top {
+    /* Pull the button upwards when hovered */
+    transform: translateY(-0.33em);
+}
+
+.verTodo:active .button_top {
+    /* Push the button downwards when pressed */
+    transform: translateY(0);
+}
+
 
 /* Estilos para la galería interna */
 .galeriaScrolleable {
@@ -98,7 +178,7 @@ h2 {
     height: 400px;
     width: 90%;
     box-sizing: border-box;
-    background-color: #c4c4c4;
+    background-color: beige;
     overflow-x: hidden;
     overflow-y: hidden;
     white-space: nowrap; /* Evita que las imágenes se apilen verticalmente */
@@ -160,22 +240,30 @@ h2 {
 }
 
 /* Estilos para las flechas de navegación */
-.arrow-left,
-.arrow-right {
+.arrow {
     position: absolute;
     top: 60%;
     transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    color: #333;
-    font-size: 56px;
-    line-height: 40px;
+    line-height: 10px;
     text-align: center;
     cursor: pointer;
     z-index: 1;
     transition: all 0.2s linear;
     user-select: none;
+    --font-color: #323232;
+    --bg-color: beige;
+    --main-color: #323232;
+    width: 60px;
+    height: 40px;
+    border-radius: 5px;
+    border: 2px solid var(--main-color);
+    background-color: var(--bg-color);
+    box-shadow: 4px 4px var(--main-color);
+    font-size: 46px;
+    font-weight: 600;
+    color: var(--font-color);
 }
+
 
 .arrow-left {
     left: 0;
@@ -185,10 +273,8 @@ h2 {
     right: 0;
 }
 
-.arrow-left:active,
-.arrow-right:active {
-    color: gray;
-    font-size: 44px;
+.arrow:active{
+    box-shadow: 0px 0px var(--main-color);
 }
 
 /* Estilos para la ventana modal */
@@ -208,7 +294,7 @@ h2 {
 .modal-content {
     display: none; /* Oculta el contenido del modal por defecto */
     position: relative;
-    background-color: #fefefe;
+    background-color: beige;
     padding: 0;
     border: 1px solid #888;
     width: 80%;
@@ -232,7 +318,7 @@ h2 {
 #modal .modal-header {
     display: flex;
     justify-content: flex-end;
-    background-color: #333;
+    background-color: rgb(95, 65, 47);
     padding: 10px;
     border-bottom: 1px solid #888;
 }
@@ -270,7 +356,8 @@ h2 {
     height: 80%;
     width: 80%;
     margin: auto;
-    background-color: #aaa;
+    background-color: rgb(253, 253, 237);
+
 }
 
 .modal-header {
@@ -278,7 +365,7 @@ h2 {
     justify-content: flex-start; /* Alinea el menú a la izquierda */
     align-items: flex-start; /* Alinea el menú arriba */
     padding: 20px; /* Aumenta el espacio alrededor del menú */
-    background-color: #333;
+    background-color: rgb(95, 65, 47);
     color: #fff;
 }
 
@@ -307,11 +394,13 @@ h2 {
     padding: 10px;
     border-radius: 5px;
     flex-grow: 1;
-    background-color: #555;
+    color: #333;
+    background-color: rgb(215, 215, 193);
+
 }
 
 .tab.active {
-    background-color: #bbb;
+    background-color: rgb(238, 238, 217);
 }
 
 .modal-body {
@@ -328,23 +417,23 @@ h2 {
     width: 100%; /* Ocupa todo el ancho disponible */
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start; /* Alinea las filas al inicio del contenedor */
 }
 
 .image-area img {
     width: calc(25% - 10px); /* Ancho para que quepan 4 imágenes por fila */
     height: 100px;
     margin: 5px;
-    box-sizing: border-box; /* Incluye el borde en el tamaño total */
     object-fit: contain; /* Ajusta la imagen para que cubra el contenedor */
-    border: 1px solid #ddd;
     cursor: pointer;
+    box-shadow: #323232;
 }
 
-/* Estilos para el botón de retroceso */
+/* Estilos para el botón de retroceso dentro del modal */
 .back-button {
-    position: absolute;
-    top: 5px;
-    left: 10px;
+    position: absolute; /* Posiciona el botón de forma absoluta */
+    top: 5px; /* Ajusta la posición vertical */
+    left: 8px; /* Ajusta la posición horizontal */
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
     border: none;
@@ -363,7 +452,8 @@ h2 {
     font-size: 16px; /* Ajustamos el tamaño del ícono */
 }
 
-.back-button:hover{
+.back-button:hover {
     color: #bbb;
 }
+
 

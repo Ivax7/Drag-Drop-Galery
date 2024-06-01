@@ -1,4 +1,3 @@
-
 // Guardamos elementos en las variables
 const zona = document.querySelector(".zonaArrastre");
 const arrowLeft = document.querySelector('.arrow-left');
@@ -13,6 +12,14 @@ const modalImg = document.getElementById('modal-img');
 const closeModalBtn = document.querySelector('.close');
 const downloadLink = document.getElementById('download-link');
 
+zona.addEventListener('click', () => {
+    document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', async function(event) {
+    const files = event.target.files;
+    await manejarArchivos(files);
+});
 
 // Añadimos evento al pasar por encima de la zona con algo arrastrado
 zona.addEventListener("dragover", (e) => {
@@ -24,6 +31,64 @@ zona.addEventListener("dragover", (e) => {
 zona.addEventListener("dragleave", () => {
     zona.style.border = "4px dashed #999";
 });
+
+// Añadimos evento al dejar en la zona algo arrastrado
+zona.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    zona.style.border = "4px dashed #999";
+    const files = e.dataTransfer.files;
+    await manejarArchivos(files);
+});
+
+// Función para manejar archivos seleccionados o arrastrados
+async function manejarArchivos(files) {
+    try {
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const imageUrl = await response.text();
+                setTimeout(() => {
+                    crearImagen(imageUrl);
+                }, 1700);
+                mostrarSpinnerYCheck();
+            } else {
+                console.error('Error al cargar la imagen');
+            }
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
+    }
+}
+
+// Función para mostrar el spinner y el check
+function mostrarSpinnerYCheck() {
+    const frase = document.querySelector('.frase');
+    frase.style.display = 'none';
+
+    const spinner = document.querySelector('.fa-spinner');
+    spinner.style.display = 'block';
+    spinner.style.opacity = 1;
+
+    setTimeout(() => {
+        spinner.style.display = 'none';
+
+        const check = document.querySelector('.fa-check');
+        check.style.display = 'block';
+        check.style.opacity = 1;
+
+        setTimeout(() => {
+            check.style.display = 'none';
+            frase.style.display = 'block';
+        }, 1000);
+    }, 1000);
+}
 
 // Función para cargar las imágenes desde el servidor
 async function cargarImagenes() {
@@ -70,7 +135,7 @@ function crearImagen(imageUrl) {
 
     // Añadimos evento de clic a la imagen para abrir el modal
     imagen.addEventListener('click', () => {
-        abrirModal(imageUrl);
+        abrirModal(imageUrl, false);
     });
 
     // Verifica y restaura el estado de favorito al cargar la página
@@ -160,9 +225,6 @@ function crearImagen(imageUrl) {
     });
 }
 
-
-
-
 // Función para abrir el modal de imagen completa
 function abrirModal(imageUrl, desdeMenu = false) {
     // creamos la caja para insertar la imagen al hacer click
@@ -178,23 +240,27 @@ function abrirModal(imageUrl, desdeMenu = false) {
                 modalImg.src = imageUrl;
                 downloadLink.href = imageUrl; // Asigna la URL de la imagen al enlace de descarga
 
+                // Eliminar el botón de retroceso si ya existe
+                const backButton = document.querySelector('.back-button');
+                if(backButton){
+                    backButton.remove()
+                }
                 // Si se abrió desde el menú de imágenes, agregar un botón para retroceder
                 if (desdeMenu) {
                     const backButton = document.createElement('button');
-                    backButton.className = 'back-button';
-                    backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
-                    modal.appendChild(backButton); // Agrega el botón al modal
+                    backButton.classList.add('back-button');
+                    backButton.innerHTML = '<i class="fas fa-arrow-left"></i>'; // Agrega el icono que desees
 
-                    // Agregar evento de clic al botón de retroceso
+                    modalContent.insertBefore(backButton, modalImg);
+                    
                     backButton.addEventListener('click', () => {
-                        // Oculta el modal de imagen completa y muestra el menú de "Ver todas las imágenes"
+                        modalContent.style.display = "none"; // Ocultar el modal de imagen completa
                         modal.style.display = "none";
-                        modalContent.style.display = "none";
-                        allImagesModal.style.display = "flex";
+                        allImagesModal.style.display = "flex"; // Mostrar el menú de "Ver todas las imágenes"
                     });
                 }
             } else {
-                console.error('La imagen no existe:', imageUrl);
+                console.error('La imagen no existe o no se pudo cargar:', imageUrl);
             }
         })
         .catch(error => {
@@ -202,70 +268,29 @@ function abrirModal(imageUrl, desdeMenu = false) {
         });
 }
 
-
-// Añadimos evento al dejar en la zona algo arrastrado
-zona.addEventListener("drop", async (e) => {
-    e.preventDefault();
-    zona.style.border = "4px dashed #999";
-
-    const files = e.dataTransfer.files;
-
-    try {
-        for (const file of files) {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                const imageUrl = await response.text();
-                setTimeout(() => {
-                    crearImagen(imageUrl);
-                }, 1700);
-                mostrarSpinnerYCheck();
-            } else {
-                console.error('Error al cargar la imagen');
-            }
-        }
-    } catch (error) {
-        console.error('Error de red:', error);
-    }
-});
-
-// Función para mostrar el spinner y el check
-function mostrarSpinnerYCheck() {
-    const frase = document.querySelector('.frase');
-    frase.style.display = 'none';
-
-    const spinner = document.querySelector('.fa-spinner');
-    spinner.style.display = 'block';
-    spinner.style.opacity = 1;
-
-    setTimeout(() => {
-        spinner.style.display = 'none';
-    
-        const check = document.querySelector('.fa-check');
-        check.style.display = 'block';
-        check.style.opacity = 1;
-    
-        setTimeout(() => {
-            check.style.display = 'none';
-            frase.style.display = 'block';
-        }, 1000);
-    }, 1000);
+// Cerrar el modal
+closeModalBtn.onclick = function () {
+    modal.style.display = "none";
+    modalContent.style.display = "none";
 }
 
-// Añadimos eventos de click a las flechas para desplazar la galería
+// Cerrar el modal si se hace clic fuera de él
+window.onclick = function (event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
+        modalContent.style.display = "none";
+    }
+}
+
+// Navegación en la galería con flechas
 arrowLeft.addEventListener('click', () => {
-    scrollGallery('left');
+    galeriaScrolleable.scrollBy({ left: -200, behavior: 'smooth' });
 });
 
 arrowRight.addEventListener('click', () => {
-    scrollGallery('right');
+    galeriaScrolleable.scrollBy({ left: 200, behavior: 'smooth' });
 });
+
 
 function scrollGallery(direction) {
     const images = document.querySelectorAll('.galeriaScrolleable .imagen');
@@ -336,7 +361,6 @@ document.addEventListener('click', async (e) => {
 function cerrarModal() {
     modal.style.display = "none";
     modalContent.style.display = "none";
-
     // Remover la clase 'active' de cualquier otro contenedor que la tenga
     document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
     // Añadir la clase 'active' al contenedor 'recientes'
@@ -376,7 +400,7 @@ function openAllImagesModal() {
     const allImages = document.querySelectorAll('#all-images-modal .image-area img');
     allImages.forEach(image => {
         image.addEventListener('click', () => {
-            abrirModal(image.src, false); // No es necesario el botón de retroceso en este caso
+            abrirModal(image.src); // No es necesario el botón de retroceso en este caso
         });
     });
 
@@ -443,7 +467,7 @@ async function cargarImagenesRecientes() {
 
             // Añadimos evento de clic a cada imagen para abrir el modal
             img.addEventListener('click', () => {
-                abrirModal(imageUrl);
+                abrirModal(imageUrl, true);
             });
         });
     } catch (error) {
