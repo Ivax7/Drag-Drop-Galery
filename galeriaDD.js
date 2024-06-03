@@ -12,6 +12,7 @@ const modalImg = document.getElementById('modal-img');
 const closeModalBtn = document.querySelector('.close');
 const downloadLink = document.getElementById('download-link');
 
+
 zona.addEventListener('click', () => {
     document.getElementById('fileInput').click();
 });
@@ -90,6 +91,12 @@ function mostrarSpinnerYCheck() {
     }, 1000);
 }
 
+
+let modalAbierto = true; // Variable global para rastrear si el modal está abierto
+let currentImageIndex = 0; // Índice de la imagen actual
+let currentImageList = []; // Lista de imágenes actual
+let currentImageArray = []; // Array de imágenes actual
+
 // Función para cargar las imágenes desde el servidor
 async function cargarImagenes() {
     try {
@@ -98,23 +105,70 @@ async function cargarImagenes() {
             console.error('Error al obtener la lista de imágenes');
             return;
         }
-        const imageUrls = await response.json();
+        currentImageList = await response.json();
         
-        for (const imageUrl of imageUrls) {
+        // Limpiar el contenedor de imágenes antes de cargar nuevas
+        galeriaScrolleable.innerHTML = '';
+        
+        for (const imageUrl of currentImageList) {
             crearImagen(imageUrl);
         }
+
+        // Actualizar el array de imágenes actual
+        currentImageArray = currentImageList;
     } catch (error) {
         console.error('Error de red:', error);
     }
 }
 
+let clickedImageIndex = -1; // Variable para almacenar el índice de la imagen seleccionada
+
+// Listener para hacer seguimiento de la imagen clicada
+document.querySelectorAll('.image').forEach((image, index) => {
+    image.addEventListener('click', () => {
+        clickedImageIndex = index;
+    });
+});
+
+// Listener para las teclas de flecha
+document.addEventListener('keydown', (event) => {
+    // Solo se manejan las teclas de flecha si el modal está abierto
+    if (modalAbierto) {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            // Navegar a la imagen anterior o siguiente
+            if (event.key === 'ArrowLeft') {
+                if (clickedImageIndex > 0) {
+                    clickedImageIndex--;
+                }
+            } else if (event.key === 'ArrowRight') {
+                if (clickedImageIndex < currentImageArray.length - 1) {
+                    clickedImageIndex++;
+                }
+            }
+            // Calculamos el índice en el array basado en el orden inverso de carga de imágenes
+            const index = currentImageArray.length - 1 - clickedImageIndex;
+            abrirModal(currentImageArray[index], true);
+        }
+    }
+});
+
+
+
 // Llamamos a la función para cargar las imágenes cuando la página se carga por primera vez
 window.addEventListener('load', cargarImagenes);
+
 
 
 // Función para crear una imagen en el DOM
 
 function crearImagen(imageUrl) {
+    // Verificar si la imagen ya existe en el DOM
+    const existingImage = document.querySelector(`img[src="${imageUrl}"]`);
+    if (existingImage) {
+        console.log('La imagen ya existe:', imageUrl);
+        return; // Salir de la función si la imagen ya existe
+    }
+
     // Crear el contenedor de la imagen
     const imagenContainer = document.createElement("div");
     imagenContainer.className = "imagen";
@@ -195,6 +249,7 @@ function abrirModal(imageUrl, desdeMenu = false) {
                         modalContent.style.display = "none"; // Ocultar el modal de imagen completa
                         modal.style.display = "none";
                         allImagesModal.style.display = "flex"; // Mostrar el menú de "Ver todas las imágenes"
+                    
                     });
                 }
 
@@ -224,13 +279,12 @@ function abrirModal(imageUrl, desdeMenu = false) {
         });
 }
 
-
-
 // Cerrar el modal
 closeModalBtn.onclick = function () {
     modal.style.display = "none";
     modalContent.style.display = "none";
 }
+
 
 // Cerrar el modal si se hace clic fuera de él
 window.onclick = function (event) {
@@ -335,7 +389,12 @@ window.addEventListener('click', (e) => {
     }
 });
 
-
+document.addEventListener('keydown', (event) => {
+    // Manejar evento para la tecla Escape
+    if (event.key === 'Escape') {
+        cerrarModal(); // Debes definir esta función según la lógica de tu aplicación
+    }
+});
 
 
 // Cierra el modal si el usuario hace clic fuera del contenido
@@ -346,14 +405,17 @@ window.addEventListener('click', (e) => {
     }
 });
 
+
+
+
 // Función para abrir el modal de "Ver todas las imágenes"
 function openAllImagesModal() {
     const allImagesModal = document.getElementById('all-images-modal');
     allImagesModal.style.display = "flex";
-
+    
     // Llamamos a la función para cargar las imágenes recientes
     cargarImagenesRecientes();
-
+    
     // Agregar eventos de clic a las imágenes dentro del modal de "Ver todas las imágenes"
     const allImages = document.querySelectorAll('#all-images-modal .image-area img');
     allImages.forEach(image => {
@@ -361,7 +423,7 @@ function openAllImagesModal() {
             abrirModal(image.src); // No es necesario el botón de retroceso en este caso
         });
     });
-
+    
 }
 
 // Función para cerrar el modal de "Ver todas las imágenes"
@@ -374,6 +436,15 @@ function closeAllImagesModal() {
     // Añadir la clase 'active' al contenedor 'recientes'
     document.querySelector('.recientes').classList.add('active');
 }
+
+// Listener para la tecla "Escape" en el modal de todas las imágenes
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        // Cerrar el modal al presionar la tecla "Escape"
+        closeAllImagesModal();
+    }
+});
+
 
 // Evento para (llamar a la función de) cerrar el modal al hacer clic en el botón de cerrar
 document.querySelector('#all-images-modal .close').addEventListener('click', closeAllImagesModal);
@@ -437,6 +508,7 @@ async function cargarImagenesRecientes() {
 let imagenesFavoritas = []; // Lista para almacenar las imágenes favoritas
 
 // Función para cargar las imágenes favoritas
+
 async function cargarImagenesFavoritas() {
     const imageArea = document.querySelector('#all-images-modal .image-area');
     imageArea.innerHTML = ''; // Limpiamos el área de imágenes
@@ -449,18 +521,22 @@ async function cargarImagenesFavoritas() {
             // Crear elementos de imagen y agregarlos al contenedor solo si existen en el servidor
             favoriteImageUrls.reverse();
             for (const imageUrl of favoriteImageUrls) {
-                try {
-                    const response = await fetch(imageUrl);
-                    if (response.ok) {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.addEventListener('click', () => {
-                            abrirModal(imageUrl, true);
-                        });
-                        imageArea.appendChild(img);
+                // Verificar si la imagen está presente en el array favoriteImageUrls
+                if (favoriteImageUrls.includes(imageUrl)) {
+                    try {
+                        // Realizar la solicitud GET solo si la imagen está presente en el array
+                        const imageResponse = await fetch(imageUrl);
+                        if (imageResponse.ok) {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.addEventListener('click', () => {
+                                abrirModal(imageUrl, true);
+                            });
+                            imageArea.appendChild(img);
+                        }
+                    } catch (error) {
+                        console.error('Error al cargar la imagen favorita:', error);
                     }
-                } catch (error) {
-                    console.error('Error al cargar la imagen favorita:', error);
                 }
             }
         } else {
@@ -470,6 +546,7 @@ async function cargarImagenesFavoritas() {
         console.error('Error al cargar las imágenes favoritas:', error);
     }
 }
+
 
 
 // Función para cambiar entre las pestañas "Recientes" y "Favoritos"
