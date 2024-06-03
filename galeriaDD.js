@@ -110,7 +110,10 @@ async function cargarImagenes() {
 
 // Llamamos a la función para cargar las imágenes cuando la página se carga por primera vez
 window.addEventListener('load', cargarImagenes);
+
+
 // Función para crear una imagen en el DOM
+
 function crearImagen(imageUrl) {
     // Crear el contenedor de la imagen
     const imagenContainer = document.createElement("div");
@@ -143,45 +146,6 @@ function crearImagen(imageUrl) {
         abrirModal(imageUrl, false);
     });
 
-    // Añadir evento de clic al botón de corazón para marcar/desmarcar como favorita
-    buttonHeart.addEventListener('click', async (e) => {
-        e.stopPropagation(); // Evitar que el clic se propague al hacer clic en el corazón
-
-        if (isFavorite) {
-            // Si la imagen ya está en favoritos, la quitamos
-            const index = imagenesFavoritas.indexOf(imageUrl);
-            if (index > -1) {
-                imagenesFavoritas.splice(index, 1);
-            }
-            buttonHeart.classList.remove('favorito');
-            buttonHeart.style.color = ''; // Restaura el color original
-        } else {
-            // Si no está en favoritos, la agregamos
-            imagenesFavoritas.push(imageUrl);
-            buttonHeart.classList.add('favorito');
-            buttonHeart.style.color = 'green'; // Cambia el color a verde
-        }
-
-        // Guarda la lista de imágenes favoritas en el almacenamiento local
-        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
-
-        // Envía la lista de imágenes favoritas actualizada al servidor
-        try {
-            const response = await fetch('/favorite', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
-            });
-            if (!response.ok) {
-                console.error('Error al enviar la lista de imágenes favoritas al servidor');
-            }
-        } catch (error) {
-            console.error('Error de red al enviar la lista de imágenes favoritas al servidor:', error);
-        }
-    });
-
     // Añadir evento de clic al botón de cerrar para eliminar la imagen
     const buttonClose = document.createElement("i");
     buttonClose.className = "fas fa-times button-close";
@@ -203,6 +167,8 @@ function crearImagen(imageUrl) {
     });
     imagenContainer.appendChild(buttonClose);
 }
+
+
 function abrirModal(imageUrl, desdeMenu = false) {
     // creamos la caja para insertar la imagen al hacer click
     const allImagesModal = document.getElementById('all-images-modal');
@@ -757,48 +723,6 @@ crearBotonFavoritos();
 
 
 
-async function handleHeartIconClick(imageUrl) {
-    try {
-        const isFavorite = imagenesFavoritas.includes(imageUrl);
-
-        if (isFavorite) {
-            const index = imagenesFavoritas.indexOf(imageUrl);
-            if (index > -1) {
-                imagenesFavoritas.splice(index, 1);
-            }
-        } else {
-            imagenesFavoritas.push(imageUrl);
-        }
-
-        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
-
-        const buttonHeart = document.querySelector('.button-heart');
-        buttonHeart.classList.toggle('favorito', !isFavorite);
-        buttonHeart.style.color = isFavorite ? '' : 'green';
-
-        const modalHeartIcon = document.getElementById('modal-favorite-button');
-        if (modalHeartIcon) {
-            modalHeartIcon.classList.toggle('favorito', !isFavorite);
-            modalHeartIcon.style.color = isFavorite ? '' : 'green';
-        }
-
-        const response = await fetch('/favorite', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
-        });
-
-        if (!response.ok) {
-            console.error('Error al enviar la lista de imágenes favoritas al servidor');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-
 document.addEventListener('click', async (e) => {
     if (e.target.classList.contains('button-heart') || e.target.classList.contains('heart-icon')) {
         e.stopPropagation();
@@ -841,3 +765,48 @@ document.addEventListener('click', async (e) => {
         await handleHeartIconClick(imageUrl);
     }
 });
+
+// Función para manejar el evento de clic en el botón de corazón (button-heart) y en el icono de corazón (heart-icon)
+async function handleHeartIconClick(imageUrl) {
+    try {
+        const buttonHeart = document.querySelector(`.button-heart[img-src='${imageUrl}']`);
+        const heartIcon = document.querySelector(`.heart-icon[img-src='${imageUrl}']`);
+
+        let isFavorite = imagenesFavoritas.includes(imageUrl);
+
+        if (isFavorite) {
+            const index = imagenesFavoritas.indexOf(imageUrl);
+            if (index > -1) {
+                imagenesFavoritas.splice(index, 1);
+            }
+        } else {
+            imagenesFavoritas.push(imageUrl);
+        }
+
+        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
+
+        if (buttonHeart) {
+            buttonHeart.classList.toggle('favorito', !isFavorite);
+            buttonHeart.style.color = isFavorite ? '' : 'green';
+        }
+
+        if (heartIcon) {
+            heartIcon.classList.toggle('favorito', !isFavorite);
+            heartIcon.style.color = isFavorite ? '' : 'green';
+        }
+
+        const response = await fetch('/favorite', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
+        });
+
+        if (!response.ok) {
+            console.error('Error al enviar la lista de imágenes favoritas al servidor');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
