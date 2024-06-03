@@ -110,45 +110,44 @@ async function cargarImagenes() {
 
 // Llamamos a la función para cargar las imágenes cuando la página se carga por primera vez
 window.addEventListener('load', cargarImagenes);
-
 // Función para crear una imagen en el DOM
 function crearImagen(imageUrl) {
-    // creas el div que envuelve la imagen
+    // Crear el contenedor de la imagen
     const imagenContainer = document.createElement("div");
     imagenContainer.className = "imagen";
-    // creas la imagen
+    
+    // Crear la imagen
     const imagen = document.createElement("img");
     imagen.src = imageUrl;
-    // creas su botón de corazon
+    
+    // Crear el botón de corazón
     const buttonHeart = document.createElement("i");
-    buttonHeart.className = "fas fa-heart button-heart";
-    // creas su botón de cerrar imagen
-    const buttonClose = document.createElement("i");
-    buttonClose.className = "fas fa-times button-close";
-    // Añades los elementos imagen y boton al div
+    buttonHeart.className = "fas fa-heart button-heart"; 
+    
+    // Verificar si la imagen está en la lista de favoritos
+    const isFavorite = imagenesFavoritas.includes(imageUrl);
+    if (isFavorite) {
+        buttonHeart.classList.add('favorito');
+        buttonHeart.style.color = 'green';
+    }
+
+    // Añadir elementos al contenedor de la imagen
     imagenContainer.appendChild(imagen);
     imagenContainer.appendChild(buttonHeart);
-    imagenContainer.appendChild(buttonClose);
     
-    // Insertamos la imagen al principio del contenedor para que la más reciente esté la primera
-    galeriaScrolleable.insertBefore(imagenContainer, galeriaScrolleable.firstChild)
+    // Insertar la imagen al principio del contenedor
+    galeriaScrolleable.insertBefore(imagenContainer, galeriaScrolleable.firstChild);
 
-    // Añadimos evento de clic a la imagen para abrir el modal
+    // Añadir evento de clic a la imagen para abrir el modal
     imagen.addEventListener('click', () => {
         abrirModal(imageUrl, false);
     });
 
-    // Verifica y restaura el estado de favorito al cargar la página
-    if (imagenesFavoritas.includes(imageUrl)) {
-        buttonHeart.classList.add('favorito');
-        buttonHeart.style.color = 'green'; // Cambia el color a verde
-    }
-
-    // Evento de clic para agregar o quitar una imagen de favoritos
+    // Añadir evento de clic al botón de corazón para marcar/desmarcar como favorita
     buttonHeart.addEventListener('click', async (e) => {
         e.stopPropagation(); // Evitar que el clic se propague al hacer clic en el corazón
 
-        if (buttonHeart.classList.contains('favorito')) {
+        if (isFavorite) {
             // Si la imagen ya está en favoritos, la quitamos
             const index = imagenesFavoritas.indexOf(imageUrl);
             if (index > -1) {
@@ -183,49 +182,27 @@ function crearImagen(imageUrl) {
         }
     });
 
-    // Evento de clic para eliminar la imagen
-    buttonClose.addEventListener('click', async (e) => {
-        e.stopPropagation(); // Evitar que el clic se propague al hacer clic en el botón de cerrar
-
+    // Añadir evento de clic al botón de cerrar para eliminar la imagen
+    const buttonClose = document.createElement("i");
+    buttonClose.className = "fas fa-times button-close";
+    buttonClose.addEventListener('click', async () => {
         try {
-            // Realizar la solicitud DELETE para eliminar la imagen del servidor
             const response = await fetch(imageUrl, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ imageUrl: imageUrl })
+                method: 'DELETE'
             });
 
             if (response.ok) {
-                // Eliminar la imagen del DOM
                 imagenContainer.remove();
-
-                // Si la imagen estaba marcada como favorita, también eliminarla de la lista de favoritos
-                if (imagenesFavoritas.includes(imageUrl)) {
-                    imagenesFavoritas = imagenesFavoritas.filter(url => url !== imageUrl);
-                    localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas)); // Actualizar almacenamiento local
-
-                    // Actualizar la lista de imágenes favoritas en el cliente
-                    const favoriteImages = document.querySelectorAll('.image-area img');
-                    favoriteImages.forEach(image => {
-                        if (image.src === imageUrl) {
-                            image.remove();
-                        }
-                    });
-                }
-
-                console.log('Imagen eliminada:', imageUrl);
+                console.log('Imagen eliminada correctamente');
             } else {
                 console.error('Error al eliminar la imagen');
             }
         } catch (error) {
-            console.error('Error al eliminar la imagen:', error);
+            console.error('Error de red:', error);
         }
     });
+    imagenContainer.appendChild(buttonClose);
 }
-
-// Función para abrir el modal de imagen completa
 function abrirModal(imageUrl, desdeMenu = false) {
     // creamos la caja para insertar la imagen al hacer click
     const allImagesModal = document.getElementById('all-images-modal');
@@ -239,12 +216,7 @@ function abrirModal(imageUrl, desdeMenu = false) {
                 modalContent.style.display = "block";
                 modalImg.src = imageUrl;
                 downloadLink.href = imageUrl; // Asigna la URL de la imagen al enlace de descarga
-
-                // Eliminar el botón de retroceso si ya existe
-                const backButton = document.querySelector('.back-button');
-                if(backButton){
-                    backButton.remove()
-                }
+                
                 // Si se abrió desde el menú de imágenes, agregar un botón para retroceder
                 if (desdeMenu) {
                     const backButton = document.createElement('button');
@@ -259,6 +231,24 @@ function abrirModal(imageUrl, desdeMenu = false) {
                         allImagesModal.style.display = "flex"; // Mostrar el menú de "Ver todas las imágenes"
                     });
                 }
+
+                // Verificar si la imagen está marcada como favorita y actualizar el botón de favoritos
+                const isFavorite = imagenesFavoritas.includes(imageUrl);
+                const favoriteButton = document.getElementById('modal-favorite-button');
+                if (!favoriteButton) {
+                    // Si no existe un botón de favoritos, crear uno nuevo
+                    crearBotonFavoritos(isFavorite);
+                } else {
+                    // Si el botón de favoritos ya existe, actualizar su estado
+                    if (isFavorite) {
+                        favoriteButton.classList.add('favorito');
+                        favoriteButton.style.color = 'green';
+                    } else {
+                        favoriteButton.classList.remove('favorito');
+                        favoriteButton.style.color = '';
+                    }
+                }
+
             } else {
                 console.error('La imagen no existe o no se pudo cargar:', imageUrl);
             }
@@ -267,6 +257,8 @@ function abrirModal(imageUrl, desdeMenu = false) {
             console.error('Error al verificar la existencia de la imagen:', error);
         });
 }
+
+
 
 // Cerrar el modal
 closeModalBtn.onclick = function () {
@@ -549,31 +541,55 @@ window.addEventListener('load', async () => {
     }
 });
 
-// Evento para agregar o quitar una imagen de favoritos
+// Evento de clic para agregar o quitar una imagen de favoritos
 document.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('button-heart')) {
-        const imagenContainer = e.target.closest('.imagen');
-        const imagen = imagenContainer.querySelector('img');
-        const imageUrl = imagen.src;
+    if (e.target.classList.contains('button-heart') || e.target.classList.contains('heart-icon')) {
+        let imageUrl;
 
-        // Si la imagen ya está en favoritos, la quitamos
+        if (e.target.id === 'modal-heart') {
+            const modalImg = document.getElementById('modal-img');
+            imageUrl = modalImg.src;
+        } else {
+            const imagenContainer = e.target.closest('.imagen');
+
+            if (!imagenContainer) {
+                console.error('No se encontró el contenedor de la imagen');
+                return;
+            }
+
+            const imagen = imagenContainer.querySelector('img');
+
+            if (!imagen) {
+                console.error('No se encontró la imagen dentro del contenedor');
+                return;
+            }
+
+            imageUrl = imagen.src;
+        }
+
         if (imagenesFavoritas.includes(imageUrl)) {
             console.log('Quitar imagen de favoritos:', imageUrl);
             const index = imagenesFavoritas.indexOf(imageUrl);
             if (index > -1) {
                 imagenesFavoritas.splice(index, 1);
             }
-            e.target.classList.remove('favorito');
-        } else { // Si no está en favoritos, la agregamos
+            e.target.classList.remove('favorito'); // Remover la clase solo si la imagen no está en favoritos
+            if (e.target.classList.contains('button-heart')) {
+                e.target.style.color = ''; // Restaurar el color original solo si es un button-heart
+            }
+        } else {
             console.log('Agregar imagen a favoritos:', imageUrl);
             imagenesFavoritas.push(imageUrl);
+            e.target.style.color = 'green'; // Cambiar el color solo si es un button-heart
             e.target.classList.add('favorito');
+
+            if (e.target.classList.contains('button-heart')) {
+                e.target.style.color = 'green'; // Cambiar el color solo si es un button-heart
+            }
         }
 
-        // Guarda la lista de imágenes favoritas en el almacenamiento local
         localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
 
-        // Envía la lista de imágenes favoritas actualizada al servidor
         try {
             const response = await fetch('/favorite', {
                 method: 'POST',
@@ -588,19 +604,31 @@ document.addEventListener('click', async (e) => {
         } catch (error) {
             console.error('Error de red al enviar la lista de imágenes favoritas al servidor:', error);
         }
-
-        // Actualiza la lista de imágenes favoritas en la interfaz de usuario
-        cargarImagenesFavoritas();
     }
 });
 
 
 
-
+// Al cargar la página, verifica si hay imágenes favoritas almacenadas en el servidor
+window.addEventListener('load', async () => {
+    try {
+        const response = await fetch('/favorite');
+        if (response.ok) {
+            const favoriteImageUrls = await response.json();
+            imagenesFavoritas = favoriteImageUrls;
+            // Marca como favoritas las imágenes almacenadas
+            marcarFavoritas();
+        } else {
+            console.error('Error al obtener las imágenes favoritas');
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
+    }
+});
 
 // Función para marcar las imágenes favoritas
 function marcarFavoritas() {
-    const botonesCorazon = document.querySelectorAll('.button-heart');
+    const botonesCorazon = document.querySelectorAll('.heart-icon, .button-heart');
     botonesCorazon.forEach((buttonHeart) => {
         const imagenContainer = buttonHeart.closest('.imagen');
         const imagen = imagenContainer.querySelector('img');
@@ -608,6 +636,208 @@ function marcarFavoritas() {
 
         if (imagenesFavoritas.includes(imageUrl)) {
             buttonHeart.classList.add('favorito');
+            buttonHeart.style.color = 'green'; // Cambia el color a verde
+        } else {
+            buttonHeart.classList.remove('favorito');
+            buttonHeart.style.color = ''; // Restaura el color original
         }
     });
 }
+
+
+
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('heart-icon')) {
+        const buttonHeart = e.target;
+        const imagenContainer = buttonHeart.closest('.imagen');
+        const imagen = imagenContainer.querySelector('img');
+        const imageUrl = imagen.src;
+
+        if (imagenesFavoritas.includes(imageUrl)) {
+            // Si la imagen ya está en favoritos, la quitamos
+            imagenesFavoritas = imagenesFavoritas.filter(url => url !== imageUrl);
+            buttonHeart.classList.remove('favorito');
+            buttonHeart.style.color = ''; // Restaura el color original
+        } else {
+            // Si no está en favoritos, la agregamos
+            imagenesFavoritas.push(imageUrl);
+            buttonHeart.classList.add('favorito');
+            buttonHeart.style.color = 'green'; // Cambia el color a verde
+        }
+
+        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
+
+        try {
+            const response = await fetch('/favorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
+            });
+            if (!response.ok) {
+                console.error('Error al enviar la lista de imágenes favoritas al servidor');
+            } else {
+                // Actualiza el estado de los botones de corazón
+                marcarFavoritas();
+            }
+        } catch (error) {
+            console.error('Error de red al enviar la lista de imágenes favoritas al servidor:', error);
+        }
+    }
+});
+
+
+
+// Función para crear el botón de favoritos en el modal de imagen completa
+function crearBotonFavoritos() {
+    const modalHeader = document.querySelector('.modal-header');
+
+    // Verificar si el botón de favoritos ya existe
+    let favoriteButton = document.getElementById('modal-favorite-button');
+    if (!favoriteButton) {
+        favoriteButton = document.createElement('i');
+        favoriteButton.classList.add('fas', 'fa-heart', 'heart-icon');
+        favoriteButton.id = 'modal-favorite-button';
+        modalHeader.appendChild(favoriteButton);
+    }
+
+    // Verificar si la imagen actual está en la lista de favoritos
+    const isFavorite = imagenesFavoritas.includes(modalImg.src);
+    if (isFavorite) {
+        favoriteButton.classList.add('favorito');
+        favoriteButton.style.color = 'green'; // Cambia el color a verde
+    } else {
+        favoriteButton.classList.remove('favorito');
+        favoriteButton.style.color = ''; // Restaura el color original
+    }
+
+    // Agregar evento de clic al botón de favoritos
+    favoriteButton.addEventListener('click', async () => {
+        if (isFavorite) {
+            // Si la imagen está en favoritos, la quitamos
+            const index = imagenesFavoritas.indexOf(modalImg.src);
+            if (index > -1) {
+                imagenesFavoritas.splice(index, 1);
+            }
+        } else {
+            // Si no está en favoritos, la agregamos
+            imagenesFavoritas.push(modalImg.src);
+        }
+
+        // Guardar la lista de imágenes favoritas en el almacenamiento local
+        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
+
+        // Actualizar el estado del botón de favoritos en el modal
+        crearBotonFavoritos();
+
+        // Sincronizar el estado del botón de favoritos en la galería de imágenes
+        sincronizarBotonFavoritosGaleria();
+    });
+}
+
+// Función para sincronizar el estado del botón de favoritos en la galería de imágenes
+function sincronizarBotonFavoritosGaleria() {
+    const imagenes = document.querySelectorAll('.imagen');
+    imagenes.forEach(imagen => {
+        const buttonHeart = imagen.querySelector('.heart-icon');
+        if (!buttonHeart) return; // Si no se encuentra el botón de favoritos, salir
+        if (imagenesFavoritas.includes(imagen.querySelector('img').src)) {
+            buttonHeart.classList.add('favorito');
+            buttonHeart.style.color = 'green'; // Cambia el color a verde
+        } else {
+            buttonHeart.classList.remove('favorito');
+            buttonHeart.style.color = ''; // Restaura el color original
+        }
+    });
+}
+
+// Llamar a la función para crear el botón de favoritos en el modal de imagen completa
+crearBotonFavoritos();
+
+
+
+async function handleHeartIconClick(imageUrl) {
+    try {
+        const isFavorite = imagenesFavoritas.includes(imageUrl);
+
+        if (isFavorite) {
+            const index = imagenesFavoritas.indexOf(imageUrl);
+            if (index > -1) {
+                imagenesFavoritas.splice(index, 1);
+            }
+        } else {
+            imagenesFavoritas.push(imageUrl);
+        }
+
+        localStorage.setItem('favoritos', JSON.stringify(imagenesFavoritas));
+
+        const buttonHeart = document.querySelector('.button-heart');
+        buttonHeart.classList.toggle('favorito', !isFavorite);
+        buttonHeart.style.color = isFavorite ? '' : 'green';
+
+        const modalHeartIcon = document.getElementById('modal-favorite-button');
+        if (modalHeartIcon) {
+            modalHeartIcon.classList.toggle('favorito', !isFavorite);
+            modalHeartIcon.style.color = isFavorite ? '' : 'green';
+        }
+
+        const response = await fetch('/favorite', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ favoriteImageUrls: imagenesFavoritas })
+        });
+
+        if (!response.ok) {
+            console.error('Error al enviar la lista de imágenes favoritas al servidor');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('button-heart') || e.target.classList.contains('heart-icon')) {
+        e.stopPropagation();
+
+        const imageUrl = e.target.classList.contains('button-heart')
+            ? e.target.closest('.imagen').querySelector('img').src
+            : document.getElementById('modal-img').src;
+
+        await handleHeartIconClick(imageUrl);
+    }
+});
+
+
+
+// Función para sincronizar el estado del icono de corazón en el modal
+function syncHeartIconState(isFavorite) {
+    const modalHeartIcon = document.getElementById('modal-favorite-button');
+    if (modalHeartIcon) {
+        modalHeartIcon.classList.toggle('favorito', !isFavorite);
+        modalHeartIcon.style.color = isFavorite ? '' : 'green'; // Restaura el color original si se quitó de favoritos, cambia a verde si se agregó
+    }
+}
+
+// Evento de clic en el botón de corazón (button-heart) para marcar/desmarcar como favorita la imagen
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('button-heart')) {
+        e.stopPropagation(); // Evitar que el clic se propague al hacer clic en el corazón
+        const imagenContainer = e.target.closest('.imagen');
+        const imagen = imagenContainer.querySelector('img');
+        const imageUrl = imagen.src;
+        await handleHeartIconClick(imageUrl);
+    }
+});
+
+// Evento de clic en el icono de corazón (heart-icon) en el modal para marcar/desmarcar como favorita la imagen
+document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('heart-icon')) {
+        const modalImg = document.getElementById('modal-img');
+        const imageUrl = modalImg.src;
+        await handleHeartIconClick(imageUrl);
+    }
+});
